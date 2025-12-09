@@ -2,6 +2,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <stdexcept>
 #include "logger.h"
 using namespace std;
 
@@ -33,7 +34,10 @@ public:
 // 기본 캐릭터
 class Knight : public Character {
 public:
-    Knight() { description = "Knight"; type = CharacterType::Knight;
+    Knight() {
+        Logger::getInstance()->log("[Create] Knight"); 
+        description = "Knight"; 
+        type = CharacterType::Knight;
     }
     int getAttack() const override { return 15; }
     int getSpeed() const override { return 8; }
@@ -42,7 +46,10 @@ public:
 
 class Wizard : public Character {
 public:
-    Wizard() { description = "Wizard"; type = CharacterType::Wizard;
+    Wizard() {
+        Logger::getInstance()->log("[Create] Wizard");
+        description = "Wizard"; 
+        type = CharacterType::Wizard;
     }
     int getAttack() const override { return 20; }
     int getSpeed() const override { return 10; }
@@ -51,7 +58,10 @@ public:
 
 class Archer : public Character {
 public:
-    Archer() { description = "Archer"; type = CharacterType::Archer;
+    Archer() { 
+        Logger::getInstance()->log("[Create] Archer");
+        description = "Archer"; 
+        type = CharacterType::Archer;
     }
     int getAttack() const override { return 18; }
     int getSpeed() const override { return 15; }
@@ -62,8 +72,12 @@ public:
 class EquipDeco : public Character {
 protected:
     shared_ptr<Character> character;
+    string itemName;
 public:
-    EquipDeco(shared_ptr<Character> c, string item) : character(c) {
+    EquipDeco(shared_ptr<Character> c, string item) : character(c), itemName(item) {
+        if (character) {
+            Logger::getInstance()->log("[Trying to Equip] " + character->getDescription() + " + " + item);
+        }
     }
     virtual ~EquipDeco() { }
 };
@@ -72,7 +86,9 @@ public:
 class Armor : public EquipDeco {
 public:
     Armor(shared_ptr<Character> c) : EquipDeco(c, "Armor") {} 
-    string getDescription() const override { return character->getDescription() + " + Armor"; }
+    string getDescription() const override { 
+        return character->getDescription() + " + Armor";
+    }
     int getAttack() const override { return character->getAttack(); }
     int getSpeed() const override { return character->getSpeed() - 2; }
     int getDefense() const override { return character->getDefense() + 10; }
@@ -82,7 +98,9 @@ public:
 class Boots : public EquipDeco {
 public:
     Boots(shared_ptr<Character> c) : EquipDeco(c, "Boots") {} 
-    string getDescription() const override { return character->getDescription() + " + Boots"; }
+    string getDescription() const override {
+        return character->getDescription() + " + Boots";
+    }
     int getAttack() const override { return character->getAttack(); }
     int getSpeed() const override { return character->getSpeed() + 5; }
     int getDefense() const override { return character->getDefense(); }
@@ -91,8 +109,14 @@ public:
 
 class Staff : public EquipDeco {
 public:
-    Staff(shared_ptr<Character> c) : EquipDeco(c, "Staff") {}
-    string getDescription() const override { return character->getDescription() + " + Staff"; }
+    Staff(shared_ptr<Character> c) : EquipDeco(c, "Staff") {
+        if (!c || c->getType() != CharacterType::Wizard) {
+            throw invalid_argument("Staff requires Wizard");
+        }
+    }
+    string getDescription() const override {
+        return character->getDescription() + " + Staff";
+    }
     int getAttack() const override { return character->getAttack() + 8; }
     int getSpeed() const override { return character->getSpeed(); }
     int getDefense() const override { return character->getDefense(); }
@@ -102,7 +126,9 @@ public:
 class Sword : public EquipDeco {
 public:
     Sword(shared_ptr<Character> c) : EquipDeco(c, "Sword") {} 
-    string getDescription() const override { return character->getDescription() + " + Sword"; }
+    string getDescription() const override {
+        return character->getDescription() + " + Sword";
+    }
     int getAttack() const override { return character->getAttack() + 10; }
     int getSpeed() const override { return character->getSpeed(); }
     int getDefense() const override { return character->getDefense(); }
@@ -111,8 +137,14 @@ public:
 
 class Bow : public EquipDeco {
 public:
-    Bow(shared_ptr<Character> c) : EquipDeco(c, "Bow") {}
-    string getDescription() const override { return character->getDescription() + " + Bow"; }
+    Bow(shared_ptr<Character> c) : EquipDeco(c, "Bow") {
+        if (!c || (c->getType() != CharacterType::Archer && c->getType() != CharacterType::Knight)) {
+            throw invalid_argument("Bow requires Archer or Knight");
+        }
+    }
+    string getDescription() const override {
+        return character->getDescription() + " + Bow";
+    }
     int getAttack() const override { return character->getAttack() + 7; }
     int getSpeed() const override { return character->getSpeed() + 2; }
     int getDefense() const override { return character->getDefense(); }
